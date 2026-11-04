@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "author": "FIAP - CardioIA Team",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": -150,
+      "left": -120,
+      "attrs": { "temperature": "36.8", "humidity": "55" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot_bpm",
+      "top": 180,
+      "left": -140,
+      "attrs": { "value": "1200" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_status",
+      "top": -120,
+      "left": 180,
+      "attrs": { "color": "green", "label": "Status Normal" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_status",
+      "top": -70,
+      "left": 180,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_alert",
+      "top": -10,
+      "left": 180,
+      "attrs": { "color": "red", "label": "Alerta Clinico" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_alert",
+      "top": 40,
+      "left": 180,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzzer1",
+      "top": 120,
+      "left": 180,
+      "attrs": { "volume": "0.1" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "esp:3V3", "dht1:VCC", "red", [ "v0" ] ],
+    [ "esp:GND.1", "dht1:GND", "black", [ "v0" ] ],
+    [ "esp:15", "dht1:SDA", "gold", [ "v0" ] ],
+
+    [ "esp:3V3", "pot_bpm:VCC", "red", [ "v0" ] ],
+    [ "esp:GND.2", "pot_bpm:GND", "black", [ "v0" ] ],
+    [ "esp:34", "pot_bpm:SIG", "cyan", [ "v0" ] ],
+
+    [ "esp:2", "r_status:1", "green", [ "v0" ] ],
+    [ "r_status:2", "led_status:A", "green", [ "v0" ] ],
+    [ "led_status:C", "esp:GND.1", "black", [ "v0" ] ],
+
+    [ "esp:4", "r_alert:1", "orange", [ "v0" ] ],
+    [ "r_alert:2", "led_alert:A", "red", [ "v0" ] ],
+    [ "led_alert:C", "esp:GND.1", "black", [ "v0" ] ],
+
+    [ "esp:5", "buzzer1:2", "purple", [ "v0" ] ],
+    [ "buzzer1:1", "esp:GND.2", "black", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}

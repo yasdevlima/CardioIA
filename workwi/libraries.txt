@@ -1,0 +1,5 @@
+# Bibliotecas obrigatorias para o CardioIA no Wokwi
+DHT sensor library
+Adafruit Unified Sensor
+PubSubClient
+ArduinoJson
