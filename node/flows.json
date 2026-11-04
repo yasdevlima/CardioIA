@@ -1,0 +1,513 @@
+[
+  {
+    "id": "tab_cardioia",
+    "type": "tab",
+    "label": "CardioIA - Monitoramento",
+    "disabled": false,
+    "info": "Fluxo principal de telemetria, analise em tempo real e dashboard clinico do projeto CardioIA."
+  },
+  {
+    "id": "ui_tab_main",
+    "type": "ui_tab",
+    "name": "Monitoramento CardioIA",
+    "icon": "favorite",
+    "order": 1,
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui_base",
+    "type": "ui_base",
+    "theme": {
+      "name": "theme-light",
+      "lightTheme": {
+        "default-primary": "#0B3B60",
+        "default-secondary": "#1E88E5",
+        "default-sidebar": "#0B192C",
+        "default-background": "#F0F4F8",
+        "default-card": "#FFFFFF",
+        "default-text": "#1A2530"
+      }
+    },
+    "site": {
+      "name": "CardioIA - UTI Inteligente",
+      "hideToolbar": "false",
+      "allowSwipe": "false",
+      "lockMenu": "false",
+      "allowTempTheme": "false",
+      "dateFormat": "DD/MM/YYYY",
+      "sizes": {
+        "sx": 48,
+        "sy": 48,
+        "gx": 6,
+        "gy": 6,
+        "cx": 6,
+        "cy": 6,
+        "px": 6,
+        "py": 6
+      }
+    }
+  },
+  {
+    "id": "grp_patient",
+    "type": "ui_group",
+    "name": "Prontuário do Paciente",
+    "tab": "ui_tab_main",
+    "order": 1,
+    "disp": true,
+    "width": "6",
+    "collapse": false
+  },
+  {
+    "id": "grp_connectivity",
+    "type": "ui_group",
+    "name": "Status da Conexão & IoT Edge",
+    "tab": "ui_tab_main",
+    "order": 2,
+    "disp": true,
+    "width": "6",
+    "collapse": false
+  },
+  {
+    "id": "grp_bpm",
+    "type": "ui_group",
+    "name": "Frequência Cardíaca",
+    "tab": "ui_tab_main",
+    "order": 3,
+    "disp": true,
+    "width": "4",
+    "collapse": false
+  },
+  {
+    "id": "grp_temp",
+    "type": "ui_group",
+    "name": "Temperatura Corporal",
+    "tab": "ui_tab_main",
+    "order": 4,
+    "disp": true,
+    "width": "4",
+    "collapse": false
+  },
+  {
+    "id": "grp_hum",
+    "type": "ui_group",
+    "name": "Umidade do Ambiente",
+    "tab": "ui_tab_main",
+    "order": 5,
+    "disp": true,
+    "width": "4",
+    "collapse": false
+  },
+  {
+    "id": "grp_chart",
+    "type": "ui_group",
+    "name": "Tendência Temporal da Frequência Cardíaca",
+    "tab": "ui_tab_main",
+    "order": 6,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "grp_alerts",
+    "type": "ui_group",
+    "name": "Painel de Alertas Médicos em Tempo Real",
+    "tab": "ui_tab_main",
+    "order": 7,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "mqtt_broker_config",
+    "type": "mqtt-broker",
+    "name": "HiveMQ Broker",
+    "broker": "broker.hivemq.com",
+    "port": "1883",
+    "tls": "",
+    "clientid": "CardioIA_NodeRED_Dashboard",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "mqtt_in_telemetry",
+    "type": "mqtt in",
+    "z": "tab_cardioia",
+    "name": "Sub Telemetria Consolidada",
+    "topic": "cardioia/paciente01/telemetria",
+    "qos": "0",
+    "datatype": "json",
+    "broker": "mqtt_broker_config",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 180,
+    "wires": [
+      [
+        "fn_parse_telemetry",
+        "watchdog_trigger",
+        "fn_check_alerts"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt_in_status",
+    "type": "mqtt in",
+    "z": "tab_cardioia",
+    "name": "Sub Status / LWT",
+    "topic": "cardioia/paciente01/status",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "mqtt_broker_config",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 320,
+    "wires": [
+      [
+        "fn_parse_status"
+      ]
+    ]
+  },
+  {
+    "id": "fn_parse_telemetry",
+    "type": "function",
+    "z": "tab_cardioia",
+    "name": "Roteador de Dados",
+    "func": "const payload = msg.payload;\n\n// 1. Frequencia Cardiaca\nconst msgBpm = {\n    payload: payload.vitals ? payload.vitals.heart_rate_bpm : 0,\n    topic: 'BPM'\n};\n\n// 2. Temperatura\nconst msgTemp = {\n    payload: payload.vitals ? parseFloat(payload.vitals.temperature_c) : 0,\n    topic: 'Temperatura'\n};\n\n// 3. Umidade\nconst msgHum = {\n    payload: payload.vitals ? parseFloat(payload.vitals.humidity_pct) : 0,\n    topic: 'Umidade'\n};\n\n// 4. Metadados de Conexao & Edge\nconst isSynced = payload.status && payload.status.is_synced_data;\nconst queueSize = payload.status ? payload.status.offline_queue_size : 0;\nconst connStatus = {\n    payload: `ONLINE ${isSynced ? '(DADOS RECUPERADOS)' : ''}`,\n    queue: queueSize,\n    device: payload.device_id || 'ESP32',\n    uptime: payload.uptime_s || 0,\n    color: isSynced ? '#F39C12' : '#00B894'\n};\n\nreturn [msgBpm, msgTemp, msgHum, { payload: connStatus }];",
+    "outputs": 4,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 410,
+    "y": 180,
+    "wires": [
+      [
+        "ui_gauge_bpm",
+        "ui_chart_bpm"
+      ],
+      [
+        "ui_gauge_temp"
+      ],
+      [
+        "ui_gauge_hum"
+      ],
+      [
+        "ui_text_conn_info"
+      ]
+    ]
+  },
+  {
+    "id": "ui_gauge_bpm",
+    "type": "ui_gauge",
+    "z": "tab_cardioia",
+    "name": "Gauge FC (BPM)",
+    "group": "grp_bpm",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "gtype": "gage",
+    "title": "Batimentos / Minuto",
+    "label": "BPM",
+    "format": "{{value}}",
+    "min": "40",
+    "max": "180",
+    "colors": [
+      "#0984e3",
+      "#00b894",
+      "#d63031"
+    ],
+    "seg1": "60",
+    "seg2": "120",
+    "className": "",
+    "x": 670,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "ui_chart_bpm",
+    "type": "ui_chart",
+    "z": "tab_cardioia",
+    "name": "Gráfico Tendência BPM",
+    "group": "grp_chart",
+    "order": 1,
+    "width": "12",
+    "height": "6",
+    "label": "Histórico Contínuo da Frequência Cardíaca (BPM)",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "Aguardando telemetria do vestível...",
+    "dot": true,
+    "ymin": "40",
+    "ymax": "180",
+    "removeOlder": "15",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "60",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#d63031",
+      "#aec7e8",
+      "#ff7f0e",
+      "#2ca02c",
+      "#98df8a",
+      "#d62728",
+      "#ff9896",
+      "#9467bd",
+      "#c5b0d5"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": "",
+    "x": 690,
+    "y": 180,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "ui_gauge_temp",
+    "type": "ui_gauge",
+    "z": "tab_cardioia",
+    "name": "Gauge Temperatura",
+    "group": "grp_temp",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "gtype": "gage",
+    "title": "Temperatura Axilar",
+    "label": "°C",
+    "format": "{{value}}",
+    "min": "34",
+    "max": "42",
+    "colors": [
+      "#0984e3",
+      "#00b894",
+      "#d63031"
+    ],
+    "seg1": "36.0",
+    "seg2": "38.0",
+    "className": "",
+    "x": 680,
+    "y": 240,
+    "wires": []
+  },
+  {
+    "id": "ui_gauge_hum",
+    "type": "ui_gauge",
+    "z": "tab_cardioia",
+    "name": "Gauge Umidade",
+    "group": "grp_hum",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "gtype": "compass",
+    "title": "Umidade do Ar",
+    "label": "%",
+    "format": "{{value}}",
+    "min": "10",
+    "max": "100",
+    "colors": [
+      "#f39c12",
+      "#00b894",
+      "#0984e3"
+    ],
+    "seg1": "40",
+    "seg2": "70",
+    "className": "",
+    "x": 670,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "ui_text_conn_info",
+    "type": "ui_template",
+    "z": "tab_cardioia",
+    "group": "grp_connectivity",
+    "name": "Card Conexão e Fila",
+    "order": 1,
+    "width": "6",
+    "height": "4",
+    "format": "<div style=\"padding: 10px; font-family: sans-serif;\">\n  <div style=\"display:flex; justify-content:space-between; align-items:center;\">\n    <span style=\"font-size: 14px; color: #636e72;\">Estado da Comunicação:</span>\n    <span style=\"background-color: {{msg.payload.color || '#00B894'}}; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 12px;\">\n      {{msg.payload.payload || 'ONLINE'}}\n    </span>\n  </div>\n  <hr style=\"border: none; border-top: 1px solid #dfe6e9; margin: 8px 0;\">\n  <div style=\"font-size: 13px; line-height: 1.8;\">\n    <div><b>Dispositivo:</b> {{msg.payload.device || 'ESP32-CARDIOIA-001'}}</div>\n    <div><b>Fila de Borda Offline:</b> <span style=\"color: #d63031; font-weight: bold;\">{{msg.payload.queue || 0}}</span> registros</div>\n    <div><b>Tempo Ativo (Uptime):</b> {{msg.payload.uptime || 0}} segundos</div>\n    <div><b>Protocolo:</b> MQTT (HiveMQ Cloud / TLS)</div>\n  </div>\n</div>",
+    "storeOutMessages": true,
+    "fwdInMessages": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 680,
+    "y": 360,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "fn_check_alerts",
+    "type": "function",
+    "z": "tab_cardioia",
+    "name": "Processador de Alertas",
+    "func": "const payload = msg.payload;\nconst vitals = payload.vitals || {};\nconst bpm = vitals.heart_rate_bpm || 0;\nconst temp = parseFloat(vitals.temperature_c || 0);\n\nlet alertLevel = 'NORMAL';\nlet alertColor = '#00B894';\nlet alertTitle = 'Sinais Vitais Estáveis';\nlet alertDetails = 'Paciente em repouso dentro dos parâmetros clínicos adequados.';\nlet playSound = false;\n\n// Verificacao de Taquicardia Severa (> 120 BPM)\nif (bpm >= 120) {\n    alertLevel = 'CRÍTICO';\n    alertColor = '#D63031';\n    alertTitle = 'ALERTA: TAQUICARDIA SEVERA DETECTADA!';\n    alertDetails = `Frequência Cardíaca de ${bpm} BPM ultrapassou o limite seguro de 120 BPM. Risco de arritmia hemodinâmica.`;\n    playSound = true;\n} \n// Verificacao de Febre (> 38.0 C)\nelse if (temp >= 38.0) {\n    alertLevel = 'ALERTA';\n    alertColor = '#E67E22';\n    alertTitle = 'ALERTA: HIPERTERMIA / FEBRE ALTA';\n    alertDetails = `Temperatura corporal de ${temp.toFixed(1)} °C ultrapassou o limiar de 38.0 °C. Requer conduta antitérmica.`;\n    playSound = true;\n}\n// Verificacao de Bradicardia (< 60 BPM)\nelse if (bpm < 60 && bpm > 0) {\n    alertLevel = 'ATENÇÃO';\n    alertColor = '#F39C12';\n    alertTitle = 'ATENÇÃO: BRADICARDIA';\n    alertDetails = `Frequência Cardíaca em ${bpm} BPM abaixo do padrão basal esperado.`;\n}\n\nconst alertCard = {\n    level: alertLevel,\n    color: alertColor,\n    title: alertTitle,\n    details: alertDetails,\n    timestamp: new Date().toLocaleTimeString(),\n    bpm: bpm,\n    temp: temp\n};\n\nconst soundMsg = playSound ? { payload: 'alert_sound' } : null;\nreturn [{ payload: alertCard }, soundMsg];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 440,
+    "wires": [
+      [
+        "ui_alert_banner"
+      ],
+      [
+        "ui_audio_alert"
+      ]
+    ]
+  },
+  {
+    "id": "ui_alert_banner",
+    "type": "ui_template",
+    "z": "tab_cardioia",
+    "group": "grp_alerts",
+    "name": "Banner de Alertas",
+    "order": 1,
+    "width": "12",
+    "height": "4",
+    "format": "<div style=\"background-color: {{msg.payload.color || '#00B894'}}; color: white; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;\">\n  <div style=\"display:flex; justify-content:space-between; align-items:center;\">\n    <h3 style=\"margin: 0; font-size: 18px; font-weight: bold;\">\n      <i class=\"fa fa-heartbeat\" style=\"margin-right: 8px;\"></i> {{msg.payload.title || 'Sistema Normal'}}\n    </h3>\n    <span style=\"background: rgba(255,255,255,0.25); padding: 4px 8px; border-radius: 4px; font-size: 12px;\">\n      Atualizado: {{msg.payload.timestamp || '--:--:--'}}\n    </span>\n  </div>\n  <p style=\"margin: 10px 0 0 0; font-size: 14px; opacity: 0.95;\">\n    {{msg.payload.details || 'Aguardando telemetria...'}}\n  </p>\n</div>",
+    "storeOutMessages": true,
+    "fwdInMessages": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 680,
+    "y": 420,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "ui_audio_alert",
+    "type": "ui_audio",
+    "z": "tab_cardioia",
+    "name": "Beep de Alarme",
+    "group": "grp_alerts",
+    "voice": "",
+    "always": "",
+    "x": 680,
+    "y": 480,
+    "wires": []
+  },
+  {
+    "id": "ui_patient_template",
+    "type": "ui_template",
+    "z": "tab_cardioia",
+    "group": "grp_patient",
+    "name": "Card Prontuário",
+    "order": 1,
+    "width": "6",
+    "height": "4",
+    "format": "<div style=\"padding: 8px; font-family: sans-serif; font-size: 13px; line-height: 1.7;\">\n  <div style=\"font-size: 15px; font-weight: bold; color: #0B3B60; margin-bottom: 4px;\">\n    <i class=\"fa fa-user-circle\"></i> Sr. Carlos Eduardo Silva\n  </div>\n  <div><b>Idade:</b> 62 anos &nbsp;|&nbsp; <b>Sexo:</b> Masculino</div>\n  <div><b>Prontuário:</b> #2026-CARDIO-8812</div>\n  <div><b>Localização:</b> Leito 402 – UTI Coronariana (CardioIA)</div>\n  <div><b>Médico Responsável:</b> Dr. Roberto Mendes (CRM/SP 148.992)</div>\n  <div style=\"margin-top: 4px;\">\n    <b>Diagnóstico:</b> Pós-operatório de Revascularização do Miocárdio\n  </div>\n</div>",
+    "storeOutMessages": true,
+    "fwdInMessages": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 410,
+    "y": 100,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "watchdog_trigger",
+    "type": "trigger",
+    "z": "tab_cardioia",
+    "name": "Watchdog 15s",
+    "op1": "",
+    "op2": "TIMEOUT",
+    "op1type": "nul",
+    "op2type": "str",
+    "duration": "15",
+    "extend": true,
+    "overrideDelay": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "topic",
+    "outputs": 1,
+    "x": 410,
+    "y": 280,
+    "wires": [
+      [
+        "fn_device_timeout"
+      ]
+    ]
+  },
+  {
+    "id": "fn_device_timeout",
+    "type": "function",
+    "z": "tab_cardioia",
+    "name": "Alerta de Queda de Sinal",
+    "func": "const alertCard = {\n    level: 'CRÍTICO',\n    color: '#D63031',\n    title: 'PERDA DE COMUNICAÇÃO COM O VESTÍVEL!',\n    details: 'Nenhum sinal de telemetria recebido nos últimos 15 segundos. Verifique o paciente e a conexão Wi-Fi do ESP32.',\n    timestamp: new Date().toLocaleTimeString()\n};\n\nconst connStatus = {\n    payload: 'OFFLINE (DESCONECTADO)',\n    queue: '?',\n    device: 'ESP32-CARDIOIA-001',\n    uptime: 0,\n    color: '#D63031'\n};\n\nreturn [{ payload: alertCard }, { payload: connStatus }];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 680,
+    "y": 280,
+    "wires": [
+      [
+        "ui_alert_banner"
+      ],
+      [
+        "ui_text_conn_info"
+      ]
+    ]
+  },
+  {
+    "id": "fn_parse_status",
+    "type": "function",
+    "z": "tab_cardioia",
+    "name": "Trata LWT / Status",
+    "func": "const statusData = msg.payload;\nconst isOffline = statusData.status === 'OFFLINE';\n\nconst connStatus = {\n    payload: isOffline ? 'OFFLINE (LWT RECEBIDO)' : 'ONLINE',\n    queue: 0,\n    device: statusData.device || 'ESP32-CARDIOIA-001',\n    uptime: 0,\n    color: isOffline ? '#D63031' : '#00B894'\n};\n\nlet alertCard = null;\nif (isOffline) {\n    alertCard = {\n        level: 'CRÍTICO',\n        color: '#D63031',\n        title: 'DISPOSITIVO OFFLINE (LAST WILL)',\n        details: statusData.reason || 'O dispositivo vestível desconectou abruptamente da nuvem HiveMQ.',\n        timestamp: new Date().toLocaleTimeString()\n    };\n}\n\nreturn [{ payload: connStatus }, alertCard ? { payload: alertCard } : null];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 410,
+    "y": 340,
+    "wires": [
+      [
+        "ui_text_conn_info"
+      ],
+      [
+        "ui_alert_banner"
+      ]
+    ]
+  }
+]

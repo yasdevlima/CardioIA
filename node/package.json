@@ -1,0 +1,8 @@
+{
+  "name": "cardioia-node-red-dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard clinico inteligente do projeto CardioIA para monitoramento cardiaco com IoT",
+  "dependencies": {
+    "node-red-dashboard": "~3.6.5"
+  }
+}
