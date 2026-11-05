@@ -1,6 +1,20 @@
+# FIAP - Faculdade de Informática e Administração Paulista
+
+<p align="center">
+    <a href= "https://www.fiap.com.br/"><img src="assets/logo-fiap.png" alt="FIAP - Faculdade de Informática e Admnistração Paulista" border="0" width=40% height=40%></a>
+</p>
+
+<br>
+
 # CARDIOIA – A NOVA ERA DA CARDIOLOGIA INTELIGENTE
 ### Sistema Inteligente de Monitoramento Cardíaco com IoT, Edge Computing e Nuvem
-**Atividade Acadêmica – FIAP (Faculdade de Informática e Administração Paulista)**
+
+## 👨‍🎓 Integrantes: 
+
+- Marina Clara Constantino Ribeiro - RM568576
+- Yasmin Kauane Silva Lima - RM566645
+
+
 
 ---
 
@@ -147,17 +161,3 @@ Para demonstrar a resiliência offline exigida na avaliação da FIAP:
      [OFFLINE RESILIENCE] Confirmado envio do registro #1 com sucesso. Restam X-1 pendentes.
      ```
    - O Node-RED receberá a fila sequencial de dados com o status `ONLINE (DADOS RECUPERADOS)` e esvaziará a contagem até zero, sem qualquer perda de leitura histórica!
-
----
-
-## 7. Roteiro de Prints para a Entrega Acadêmica na FIAP
-
-Para compor o PDF final de entrega da atividade acadêmica, recomendamos capturar os seguintes prints:
-
-1. **Circuito no Wokwi:** Captura de tela do esquemático com ESP32, DHT22, Potenciômetro, LEDs e Buzzer conectados e identificados.
-2. **Monitor Serial (Operação Normal):** Print do log do ESP32 mostrando a inicialização dos sensores, montagem do SPIFFS/RAM e conexão MQTT.
-3. **Monitor Serial (Modo Offline e Sincronização):** Print mostrando a mensagem de retenção offline (`Fila: 1/60... 5/60`) e a sincronização subsequente com confirmação de entrega.
-4. **Console do HiveMQ Cloud:** Print da tela do cluster indicando status "RUNNING", tráfego de mensagens e o usuário cadastrado em "Access Management".
-5. **Fluxo do Node-RED:** Print da tela do Node-RED mostrando todos os nós conectados (`mqtt in`, funções de roteamento, watchdog e nós de UI).
-6. **Dashboard Clínico Estável:** Print de `http://localhost:1880/ui` com os dados normais (card do paciente, gauges em verde e gráfico de histórico).
-7. **Dashboard Clínico em Alerta:** Print do dashboard quando o potenciômetro for colocado acima de 120 BPM, destacando o banner vermelho de alerta, gauge de FC no setor crítico e notificação de taquicardia severa.
